@@ -72,7 +72,7 @@ func (r *DjobReconciler) submit(instance *databricksv1alpha1.Djob) error {
 		instance.ObjectMeta.SetOwnerReferences(references)
 	}
 	jobSettings := databricksv1alpha1.ToDatabricksJobSettings(instance.Spec)
-	job, err := createJob(r, instance)
+	job, err := r.createJob(instance)
 
 	if err != nil {
 		return err
@@ -90,7 +90,7 @@ func (r *DjobReconciler) refresh(instance *databricksv1alpha1.Djob) error {
 
 	jobID := instance.Status.JobStatus.JobID
 
-	job, err := getJob(r, jobID)
+	job, err := r.getJob(jobID)
 
 	if err != nil {
 		return err
@@ -132,7 +132,7 @@ func (r *DjobReconciler) delete(instance *databricksv1alpha1.Djob) error {
 	jobID := instance.Status.JobStatus.JobID
 
 	// Check if the job exists before trying to delete it
-	if _, err := getJob(r, jobID); err != nil {
+	if _, err := r.getJob(jobID); err != nil {
 		if strings.Contains(err.Error(), "does not exist") {
 			return nil
 		}
@@ -144,7 +144,7 @@ func (r *DjobReconciler) delete(instance *databricksv1alpha1.Djob) error {
 	})
 }
 
-func getJob(r *DjobReconciler, jobID int64) (job models.Job, err error) {
+func (r *DjobReconciler) getJob(jobID int64) (job models.Job, err error) {
 	defer trackMillisecondsTaken(time.Now(), djobGetDuration)
 
 	job, err = r.APIClient.Jobs().Get(jobID)
@@ -154,7 +154,7 @@ func getJob(r *DjobReconciler, jobID int64) (job models.Job, err error) {
 	return job, err
 }
 
-func createJob(r *DjobReconciler, instance *databricksv1alpha1.Djob) (job models.Job, err error) {
+func (r *DjobReconciler) createJob(instance *databricksv1alpha1.Djob) (job models.Job, err error) {
 	defer trackMillisecondsTaken(time.Now(), djobCreateDuration)
 
 	job, err = r.APIClient.Jobs().Create(*instance.Spec)
