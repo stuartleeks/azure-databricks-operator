@@ -43,7 +43,8 @@ func (r *SecretScopeReconciler) get(scope string) (*dbmodels.SecretScope, error)
 
 	if (dbmodels.SecretScope{}) == matchingScope {
 		return nil, fmt.Errorf("get for secret scope failed. scope not found: %s", scope)
-	}
+	} 
+	
 	return &matchingScope, nil
 }
 
@@ -108,7 +109,8 @@ func (r *SecretScopeReconciler) getSecretValueFrom(namespace string, scopeSecret
 
 		value := string(secret.Data[scopeSecret.ValueFrom.SecretKeyRef.Key])
 		return value, nil
-	}
+	} 
+	
 	return "", fmt.Errorf("No ValueFrom present to extract secret")
 }
 
