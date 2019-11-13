@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"strings"
 	"time"
 
 	databricksv1alpha1 "github.com/microsoft/azure-databricks-operator/api/v1alpha1"
@@ -81,18 +80,8 @@ func (r *DclusterReconciler) delete(instance *databricksv1alpha1.Dcluster) error
 		return nil
 	}
 
-	clusterID := instance.Status.ClusterInfo.ClusterID
-
-	// Check if the job exists before trying to delete it
-	if _, err := r.getCluster(clusterID); err != nil {
-		if strings.Contains(err.Error(), "does not exist") {
-			return nil
-		}
-		return err
-	}
-
 	return trackExecutionTime(dclusterDeleteDuration, func() error {
-		return r.APIClient.Clusters().PermanentDelete(clusterID)
+		return r.APIClient.Clusters().PermanentDelete(instance.Status.ClusterInfo.ClusterID)
 	})
 }
 
