@@ -81,3 +81,10 @@ RUN make install-kubebuilder
 RUN make install-kustomize
 RUN make install-test-dependency
 ENV SHELL /bin/bash
+
+
+RUN wget https://get.helm.sh/helm-v3.0.0-linux-amd64.tar.gz \
+            && mkdir /usr/local/helm \
+            && tar -C /usr/local/helm -zxvf helm-v3.0.0-linux-amd64.tar.gz linux-amd64/helm
+
+ENV PATH="/usr/local/helm/linux-amd64:${PATH}"
