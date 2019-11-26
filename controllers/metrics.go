@@ -31,7 +31,7 @@ func trackExecutionTime(histogram prometheus.Histogram, f func() error) error {
 }
 
 func trackMillisecondsTaken(startTime time.Time, histogram prometheus.Histogram) {
-	duration := float64(time.Now().Sub(startTime) / time.Millisecond)
+	duration := float64(time.Since(startTime) / time.Millisecond)
 	histogram.Observe(duration)
 }
 
