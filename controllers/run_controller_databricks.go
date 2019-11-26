@@ -137,7 +137,7 @@ func (r *RunReconciler) runUsingRunNow(instance *databricksv1alpha1.Run) (*dbmod
 	}
 
 	instance.ObjectMeta.SetOwnerReferences([]metav1.OwnerReference{
-		metav1.OwnerReference{
+		{
 			APIVersion: "v1alpha1", // TODO should this be a referenced value?
 			Kind:       "Djob",     // TODO should this be a referenced value?
 			Name:       k8sJob.GetName(),
