@@ -61,9 +61,7 @@ RUN apt-get update \
     && chmod +x /usr/local/bin/kubectl \
     # Install Helm
     && curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash \
-    && helm repo add stable https://kubernetes-charts.storage.googleapis.com/  \
-    # Install prometheus-operator
-    && helm install stable/prometheus-operator --generate-name 
+    && helm repo add stable https://kubernetes-charts.storage.googleapis.com/ 
 
 # Verify git, process tools installed
 RUN apt-get -y install git procps wget nano zsh inotify-tools jq
