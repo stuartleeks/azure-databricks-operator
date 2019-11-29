@@ -3,6 +3,8 @@
 IMG ?= controller:latest
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
+# Prometheus helm installation name
+PROMETHEUS_NAME ?= "prom-azure-databricks-operator"
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -156,6 +158,7 @@ endif
 
 	@echo "deploying controller to cluster"
 	make deploy-controller
+	make install-prometheus
 
 install-kind:
 ifeq (,$(shell which kind))
@@ -191,6 +194,14 @@ ifeq (,$(shell which kustomize))
 else
 	@echo "kustomize has been installed"
 endif
+
+install-prometheus:
+	@echo "installing prometheus"
+	# install prometheus
+	helm install ${PROMETHEUS_NAME} stable/prometheus-operator
+	# install service monitor
+	kubectl apply -f ./config/prometheus/servicemonitor.yaml
+	@echo "prometheus has been installed"
 
 install-test-dependency:
 	go get -u github.com/jstemmer/go-junit-report \
