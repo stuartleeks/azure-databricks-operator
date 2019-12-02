@@ -1,7 +1,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: prom-azure-databricks-operator-controller-manager-metrics-service
+  name: controller-manager-metrics-service
   labels:
     release: prom-azure-databricks-operator
 spec:
@@ -10,7 +10,7 @@ spec:
       control-plane: controller-manager
   namespaceSelector:
     matchNames:
-      - azure-databricks-operator-system
+      - $(NAMESPACE)
   endpoints:
   - path: /metrics
     port: http
