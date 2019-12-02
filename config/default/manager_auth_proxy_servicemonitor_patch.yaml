@@ -1,0 +1,15 @@
+# This patch updates the ServiceMonitor configuration to work with the auth_proxy 
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: controller-manager-metrics-service
+  labels:
+    release: prom-azure-databricks-operator
+spec:
+  endpoints:
+  - path: /metrics
+    port: https
+    scheme: https
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    tlsConfig:
+      insecureSkipVerify: true # Configure certs here if set up for auth_proxy (uses self-signed currently)
