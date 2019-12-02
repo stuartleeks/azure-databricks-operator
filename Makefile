@@ -183,7 +183,7 @@ install-prometheus:
 	helm install ${PROMETHEUS_NAME} stable/prometheus-operator
 	# install service monitor
 	kubectl apply -f ./config/prometheus/servicemonitor.yaml
-	@echo "kustomize has been installed"
+	@echo "prometheus has been installed"
 
 install-test-dependency:
 	go get -u github.com/jstemmer/go-junit-report \
