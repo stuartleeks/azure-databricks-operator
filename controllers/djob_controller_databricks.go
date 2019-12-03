@@ -33,7 +33,46 @@ func (r *DjobReconciler) submit(instance *databricksv1alpha1.Djob) error {
 
 	instance.Spec.Name = instance.GetName()
 
-	job, err := r.createJob(instance)
+	//Get existing dbricks cluster by cluster name and set ExistingClusterID or
+	var ownerInstance databricksv1alpha1.Dcluster
+	if len(instance.Spec.ExistingClusterName) > 0 {
+		dClusterNamespacedName := types.NamespacedName{Name: instance.Spec.ExistingClusterName, Namespace: instance.Namespace}
+		err := r.Get(context.Background(), dClusterNamespacedName, &ownerInstance)
+		if err != nil {
+			return err
+		}
+		if (ownerInstance.Status != nil) && (ownerInstance.Status.ClusterInfo != nil) && len(ownerInstance.Status.ClusterInfo.ClusterID) > 0 {
+			instance.Spec.ExistingClusterID = ownerInstance.Status.ClusterInfo.ClusterID
+		} else {
+			return fmt.Errorf("failed to get ClusterID of %v", instance.Spec.ExistingClusterName)
+		}
+	} else if len(instance.Spec.ExistingClusterID) > 0 {
+		var dclusters databricksv1alpha1.DclusterList
+		err := r.List(context.Background(), &dclusters, client.InNamespace(instance.Namespace), client.MatchingField(dclusterIndexKey, instance.Spec.ExistingClusterID))
+		if err != nil {
+			return err
+		}
+		if len(dclusters.Items) == 1 {
+			ownerInstance = dclusters.Items[0]
+		} else {
+			return fmt.Errorf("failed to get ClusterID of %v", instance.Spec.ExistingClusterID)
+		}
+	}
+	//Set Existing cluster as Owner of JOb
+	if &ownerInstance != nil && len(ownerInstance.APIVersion) > 0 && len(ownerInstance.Kind) > 0 && len(ownerInstance.GetName()) > 0 {
+		references := []metav1.OwnerReference{
+			{
+				APIVersion: ownerInstance.APIVersion,
+				Kind:       ownerInstance.Kind,
+				Name:       ownerInstance.GetName(),
+				UID:        ownerInstance.GetUID(),
+			},
+		}
+		instance.ObjectMeta.SetOwnerReferences(references)
+	}
+
+	jobSettings := databricksv1alpha1.ToDatabricksJobSettings(instance.Spec)
+	job, err := r.createJob(jobSettings)
 
 	if err != nil {
 		return err
@@ -118,13 +157,12 @@ func (r *DjobReconciler) getJob(jobID int64) (job dbmodels.Job, err error) {
 	return job, err
 }
 
-func (r *DjobReconciler) createJob(instance *databricksv1alpha1.Djob) (job dbmodels.Job, err error) {
+func (r *DjobReconciler) createJob(jobSettings dbmodels.JobSettings) (job dbmodels.Job, err error) {
 	timer := prometheus.NewTimer(djobCreateDuration)
 	defer timer.ObserveDuration()
 
-	job, err = r.APIClient.Jobs().Create(*instance.Spec)
+	job, err = r.APIClient.Jobs().Create(jobSettings)
 
 	trackSuccessFailure(err, djobCounterVec, "create")
-
 	return job, err
 }
