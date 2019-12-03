@@ -59,10 +59,13 @@ More info:
 - Port forward localhost:8080 to your pod: `kubectl port-forward -n azure-databricks-operator-system pod/azure-databricks-operator-controller-manager-<id> 8080:8080`
 - Open another terminal and curl request the metric endpoint: `curl localhost:8080/metrics`
 
-Counter metrics take the format `databricks_[x]_[action]_[status]_total` where:
+### Counter metrics
+Counter metrics take the format `databricks_[x]_total` where:
 - x: Object being maniputlated; example: `dcluster`
-- action: Action being performed; example: `create`
-- status: The result status; `success`|`failure`
+
+Counter metrics have labels that show breakdown by:
+- status (success | failure)
+- method (the action being performed via REST call example: get, create, delete)
 
 Histogram metrics take the format `databricks_[x]_[action]_request_duration_seconds` where:
 - x: Object being maniputlated; example: `dcluster`
