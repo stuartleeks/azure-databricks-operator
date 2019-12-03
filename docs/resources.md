@@ -48,9 +48,9 @@ More info:
 ### How to access the Prometheus instance
 - Have the operator installed and running locally. See [deploy.md](https://github.com/microsoft/azure-databricks-operator/blob/master/docs/deploy.md)
 - Determine the name of Prometheus service running in your cluster (by default this will be prom-azure-databricks-oper-prometheus)
-- Port forward localhost:8080 to your service: `kubectl port-forward service/prom-azure-databricks-oper-prometheus 8080:8080`
+- Port forward localhost:9090 to your service: `kubectl port-forward service/prom-azure-databricks-oper-prometheus 9090:9090`
     - If using VSCode and Dev Container, you may need to expose the internal port out to your host machine (Command Pallete > Remote Containers Forward Port From Container) 
-- Using a browser navigate to `http://localhost:8080` to view the Prometheus dashboard
+- Using a browser navigate to `http://localhost:9090` to view the Prometheus dashboard
 - For more information regarding the usage of Prometheus please view the [docs here](https://prometheus.io/)
 
 ### How To scrape the metrics from a single intance of the Operator running on a Pod: 
