@@ -5,13 +5,6 @@ metadata:
   labels:
     release: prom-azure-databricks-operator
 spec:
-  selector:
-    matchLabels:
-      control-plane: controller-manager
   namespaceSelector:
     matchNames:
-      - $(NAMESPACE)
-  endpoints:
-  - path: /metrics
-    port: http
-    interval: 10s
+      - $(MetricsService.Namespace)
