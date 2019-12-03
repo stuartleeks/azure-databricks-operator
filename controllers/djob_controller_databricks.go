@@ -33,8 +33,8 @@ import (
 func (r *DjobReconciler) submit(instance *databricksv1alpha1.Djob) error {
 	r.Log.Info(fmt.Sprintf("Submitting job %s", instance.GetName()))
 	instance.Spec.Name = instance.GetName()
-	//Get exisiting dbricks cluster by cluster name and set ExistingClusterID or
-	//Get exisiting dbricks cluster by cluster id
+
+	//Get existing dbricks cluster by cluster name and set ExistingClusterID or
 	var ownerInstance databricksv1alpha1.Dcluster
 	if len(instance.Spec.ExistingClusterName) > 0 {
 		dClusterNamespacedName := types.NamespacedName{Name: instance.Spec.ExistingClusterName, Namespace: instance.Namespace}
@@ -59,7 +59,7 @@ func (r *DjobReconciler) submit(instance *databricksv1alpha1.Djob) error {
 			return fmt.Errorf("failed to get ClusterID of %v", instance.Spec.ExistingClusterID)
 		}
 	}
-	//Set Exisiting cluster as Owner of JOb
+	//Set Existing cluster as Owner of JOb
 	if &ownerInstance != nil && len(ownerInstance.APIVersion) > 0 && len(ownerInstance.Kind) > 0 && len(ownerInstance.GetName()) > 0 {
 		references := []metav1.OwnerReference{
 			{
@@ -71,8 +71,9 @@ func (r *DjobReconciler) submit(instance *databricksv1alpha1.Djob) error {
 		}
 		instance.ObjectMeta.SetOwnerReferences(references)
 	}
+
 	jobSettings := databricksv1alpha1.ToDatabricksJobSettings(instance.Spec)
-	job, err := r.createJob(instance)
+	job, err := r.createJob(jobSettings)
 
 	if err != nil {
 		return err
@@ -157,13 +158,12 @@ func (r *DjobReconciler) getJob(jobID int64) (job dbmodels.Job, err error) {
 	return job, err
 }
 
-func (r *DjobReconciler) createJob(instance *databricksv1alpha1.Djob) (job dbmodels.Job, err error) {
+func (r *DjobReconciler) createJob(jobSettings dbmodels.JobSettings) (job dbmodels.Job, err error) {
 	timer := prometheus.NewTimer(djobCreateDuration)
 	defer timer.ObserveDuration()
 
-	job, err = r.APIClient.Jobs().Create(*instance.Spec)
+	job, err = r.APIClient.Jobs().Create(jobSettings)
 
 	trackSuccessFailure(err, djobCounterVec, "create")
-
 	return job, err
 }
