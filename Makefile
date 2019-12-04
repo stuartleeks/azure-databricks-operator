@@ -182,7 +182,6 @@ install-prometheus:
 	@echo "installing prometheus"
 	# install prometheus
 	helm install ${PROMETHEUS_NAME} stable/prometheus-operator
-	# install service monitor
 	@echo "prometheus has been installed"
 
 
