@@ -13,7 +13,28 @@ spec:
       containers:
       # Expose the prometheus metrics on default port
       - name: manager
+        args:
+        - "--metrics-addr=0.0.0.0:8080"
         ports:
         - containerPort: 8080
           name: metrics
           protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/port: "8080"
+    prometheus.io/scheme: https
+    prometheus.io/scrape: "true"
+  labels:
+    control-plane: controller-manager
+  name: controller-manager-metrics-service
+  namespace: system
+spec:
+  ports:
+  - name: http
+    port: 8080
+    targetPort: metrics
+  selector:
+    control-plane: controller-manager

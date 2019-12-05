@@ -1,3 +1,4 @@
+# This patch is used to apply namespace selector injection to the service monitor
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
