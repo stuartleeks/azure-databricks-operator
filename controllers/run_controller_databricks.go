@@ -116,11 +116,10 @@ func (r *RunReconciler) delete(instance *databricksv1alpha1.Run) error {
 	// It takes time for DataBricks to cancel a run
 	time.Sleep(15 * time.Second)
 
-	return trackExecutionTime(runDeleteDuration, func() error {
+	return trackExecutionMetrics(func() error {
 		err := r.APIClient.Jobs().RunsDelete(runID)
-		trackSuccessFailure(err, runCounterVec, "delete")
 		return err
-	})
+	}, "run", "delete")
 }
 
 func (r *RunReconciler) runUsingRunNow(instance *databricksv1alpha1.Run) (*dbmodels.Run, error) {
