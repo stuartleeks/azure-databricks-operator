@@ -111,14 +111,14 @@ func (r *RunReconciler) delete(instance *databricksv1alpha1.Run) error {
 
 	// We will not check for error when cancelling a job,
 	// if it fails just let it be
-	execution := NewExecution("run", "cancel")
+	execution := NewExecution("runs", "cancel")
 	err := r.APIClient.Jobs().RunsCancel(runID)
 	execution.Finish(err)
 
 	// It takes time for DataBricks to cancel a run
 	time.Sleep(15 * time.Second)
 
-	execution = NewExecution("run", "delete")
+	execution = NewExecution("runs", "delete")
 	err = r.APIClient.Jobs().RunsDelete(runID)
 	execution.Finish(err)
 	return err
@@ -148,7 +148,7 @@ func (r *RunReconciler) runUsingRunNow(instance *databricksv1alpha1.Run) (*dbmod
 		},
 	})
 
-	execution := NewExecution("run", "runnow")
+	execution := NewExecution("runs", "runnow")
 	run, err := r.APIClient.Jobs().RunNow(k8sJob.Status.JobStatus.JobID, runParameters)
 	execution.Finish(err)
 	return &run, err 
@@ -171,14 +171,14 @@ func (r *RunReconciler) runUsingRunsSubmit(instance *databricksv1alpha1.Run) (*d
 		SparkSubmitTask: instance.Spec.SparkSubmitTask,
 	}
 
-	execution := NewExecution("run", "runsubmit")
+	execution := NewExecution("runs", "runsubmit")
 	run, err := r.APIClient.Jobs().RunsSubmit(instance.Spec.RunName, clusterSpec, jobTask, instance.Spec.TimeoutSeconds)
 	execution.Finish(err)
 	return &run, err
 }
 
 func (r *RunReconciler) getRun(runID int64) (dbmodels.Run, error) {
-	execution := NewExecution("run", "get")
+	execution := NewExecution("runs", "get")
 	runOutput, err := r.APIClient.Jobs().RunsGet(runID)
 	execution.Finish(err)
 
@@ -186,7 +186,7 @@ func (r *RunReconciler) getRun(runID int64) (dbmodels.Run, error) {
 }
 
 func (r *RunReconciler) getRunOutput(runID int64) (azure.JobsRunsGetOutputResponse, error) {
-	execution := NewExecution("run", "rungetoutput")
+	execution := NewExecution("runs", "rungetoutput")
 	runOutput, err := r.APIClient.Jobs().RunsGetOutput(runID)
 	execution.Finish(err)
 
