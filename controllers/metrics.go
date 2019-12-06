@@ -47,18 +47,19 @@ func NewExecution(objectType string, action string) Execution {
 	timer := prometheus.NewTimer(observer)
 
 	return Execution{
-		timer : *timer,
+		timer:  *timer,
 		labels: labels,
 	}
 }
+
 // Execution tracks state for an API execution for emitting metrics
-type Execution struct{
-	timer prometheus.Timer
+type Execution struct {
+	timer  prometheus.Timer
 	labels prometheus.Labels
 }
 
 // Finish is used to log duration and success/failure
-func (e *Execution) Finish(err error){
+func (e *Execution) Finish(err error) {
 	e.timer.ObserveDuration()
 
 	if err != nil {
@@ -69,4 +70,3 @@ func (e *Execution) Finish(err error){
 
 	databricksRequestCounter.With(e.labels).Inc()
 }
-
