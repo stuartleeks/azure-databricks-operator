@@ -97,6 +97,4 @@ func (r *DclusterReconciler) createCluster(instance *databricksv1alpha1.Dcluster
 	cluster, err = r.APIClient.Clusters().Create(*instance.Spec)
 	execution.Finish(err)
 	return cluster, err
-
-	return cluster, err
 }
