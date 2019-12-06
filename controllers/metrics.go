@@ -62,7 +62,7 @@ type Execution struct {
 func (e *Execution) Finish(err error) {
 	e.timer.ObserveDuration()
 
-	if err != nil {
+	if err == nil {
 		e.labels["outcome"] = successMetric
 	} else {
 		e.labels["outcome"] = failureMetric
