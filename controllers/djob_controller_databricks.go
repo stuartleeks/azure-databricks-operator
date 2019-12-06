@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	databricksv1alpha1 "github.com/microsoft/azure-databricks-operator/api/v1alpha1"
-	"github.com/prometheus/client_golang/prometheus"
 	dbmodels "github.com/xinsnake/databricks-sdk-golang/azure/models"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -140,30 +139,22 @@ func (r *DjobReconciler) delete(instance *databricksv1alpha1.Djob) error {
 		return err
 	}
 
-	return trackExecutionTime(djobDeleteDuration, func() error {
-		err := r.APIClient.Jobs().Delete(jobID)
-		trackSuccessFailure(err, djobCounterVec, "delete")
-		return err
-	})
+	execution := NewExecution("djob", "delete")
+	err := r.APIClient.Jobs().Delete(jobID)
+	execution.Finish(err)
+	return err
 }
 
 func (r *DjobReconciler) getJob(jobID int64) (job dbmodels.Job, err error) {
-	timer := prometheus.NewTimer(djobGetDuration)
-	defer timer.ObserveDuration()
-
+	execution := NewExecution("djob", "get")
 	job, err = r.APIClient.Jobs().Get(jobID)
-
-	trackSuccessFailure(err, djobCounterVec, "get")
-
+	execution.Finish(err)
 	return job, err
 }
 
 func (r *DjobReconciler) createJob(jobSettings dbmodels.JobSettings) (job dbmodels.Job, err error) {
-	timer := prometheus.NewTimer(djobCreateDuration)
-	defer timer.ObserveDuration()
-
+	execution := NewExecution("djob", "create")
 	job, err = r.APIClient.Jobs().Create(jobSettings)
-
-	trackSuccessFailure(err, djobCounterVec, "create")
+	execution.Finish(err)
 	return job, err
 }
