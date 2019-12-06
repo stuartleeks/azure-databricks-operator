@@ -111,13 +111,15 @@ func (r *RunReconciler) delete(instance *databricksv1alpha1.Run) error {
 
 	// We will not check for error when cancelling a job,
 	// if it fails just let it be
-	r.APIClient.Jobs().RunsCancel(runID) //nolint:errcheck
+	execution := NewExecution("runs", "cancel")
+	err := r.APIClient.Jobs().RunsCancel(runID)
+	execution.Finish(err)
 
 	// It takes time for DataBricks to cancel a run
 	time.Sleep(15 * time.Second)
 
-	execution := NewExecution("run", "delete")
-	err := r.APIClient.Jobs().RunsDelete(runID)
+	execution = NewExecution("runs", "delete")
+	err = r.APIClient.Jobs().RunsDelete(runID)
 	execution.Finish(err)
 	return err
 }
@@ -146,12 +148,11 @@ func (r *RunReconciler) runUsingRunNow(instance *databricksv1alpha1.Run) (*dbmod
 		},
 	})
 
-	execution := NewExecution("run", "runnow")
+	execution := NewExecution("runs", "run_now")
 	run, err := r.APIClient.Jobs().RunNow(k8sJob.Status.JobStatus.JobID, runParameters)
 	execution.Finish(err)
-	return &run, err 
+	return &run, err
 }
-
 
 func (r *RunReconciler) runUsingRunsSubmit(instance *databricksv1alpha1.Run) (*dbmodels.Run, error) {
 	timer := prometheus.NewTimer(runSubmitDuration)
@@ -169,29 +170,24 @@ func (r *RunReconciler) runUsingRunsSubmit(instance *databricksv1alpha1.Run) (*d
 		SparkSubmitTask: instance.Spec.SparkSubmitTask,
 	}
 
+	execution := NewExecution("runs", "run_submit")
 	run, err := r.APIClient.Jobs().RunsSubmit(instance.Spec.RunName, clusterSpec, jobTask, instance.Spec.TimeoutSeconds)
-	trackSuccessFailure(err, runCounterVec, "runssubmit")
+	execution.Finish(err)
 	return &run, err
 }
 
 func (r *RunReconciler) getRun(runID int64) (dbmodels.Run, error) {
-	timer := prometheus.NewTimer(runGetDuration)
-	defer timer.ObserveDuration()
-
+	execution := NewExecution("runs", "get")
 	runOutput, err := r.APIClient.Jobs().RunsGet(runID)
-
-	trackSuccessFailure(err, runCounterVec, "get")
+	execution.Finish(err)
 
 	return runOutput, err
 }
 
 func (r *RunReconciler) getRunOutput(runID int64) (azure.JobsRunsGetOutputResponse, error) {
-	timer := prometheus.NewTimer(runGetOutputDuration)
-	defer timer.ObserveDuration()
-
+	execution := NewExecution("runs", "run_get_output")
 	runOutput, err := r.APIClient.Jobs().RunsGetOutput(runID)
-
-	trackSuccessFailure(err, runCounterVec, "getoutput")
+	execution.Finish(err)
 
 	return runOutput, err
 }
