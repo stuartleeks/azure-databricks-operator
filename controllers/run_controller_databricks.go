@@ -148,12 +148,11 @@ func (r *RunReconciler) runUsingRunNow(instance *databricksv1alpha1.Run) (*dbmod
 		},
 	})
 
-	execution := NewExecution("runs", "runnow")
+	execution := NewExecution("runs", "run_now")
 	run, err := r.APIClient.Jobs().RunNow(k8sJob.Status.JobStatus.JobID, runParameters)
 	execution.Finish(err)
-	return &run, err 
+	return &run, err
 }
-
 
 func (r *RunReconciler) runUsingRunsSubmit(instance *databricksv1alpha1.Run) (*dbmodels.Run, error) {
 	timer := prometheus.NewTimer(runSubmitDuration)
@@ -171,7 +170,7 @@ func (r *RunReconciler) runUsingRunsSubmit(instance *databricksv1alpha1.Run) (*d
 		SparkSubmitTask: instance.Spec.SparkSubmitTask,
 	}
 
-	execution := NewExecution("runs", "runsubmit")
+	execution := NewExecution("runs", "run_submit")
 	run, err := r.APIClient.Jobs().RunsSubmit(instance.Spec.RunName, clusterSpec, jobTask, instance.Spec.TimeoutSeconds)
 	execution.Finish(err)
 	return &run, err
@@ -186,7 +185,7 @@ func (r *RunReconciler) getRun(runID int64) (dbmodels.Run, error) {
 }
 
 func (r *RunReconciler) getRunOutput(runID int64) (azure.JobsRunsGetOutputResponse, error) {
-	execution := NewExecution("runs", "rungetoutput")
+	execution := NewExecution("runs", "run_get_output")
 	runOutput, err := r.APIClient.Jobs().RunsGetOutput(runID)
 	execution.Finish(err)
 
