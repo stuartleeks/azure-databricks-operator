@@ -18,24 +18,44 @@ package controllers
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
+	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )
 
 const (
-	metricPrefix  = "databricks_"
 	successMetric = "success"
 	failureMetric = "failure"
 )
 
-func trackExecutionTime(histogram prometheus.Histogram, f func() error) error {
-	timer := prometheus.NewTimer(histogram)
+var databricksRequestHistogram = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+	Name: "databricks_request_duration_seconds",
+	Help: "Duration of upstream calls to Databricks REST service endpoints",
+}, []string{"object_type", "action"})
+
+var databricksRequestCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Name: "databricks_request_total",
+	Help: "Counter of upstream calls to Databricks REST service endpoints",
+}, []string{"object_type", "action", "outcome"})
+
+func trackExecutionMetrics(f func() error, objectType string, action string) error {
+	labels := prometheus.Labels{"object_type": objectType, "action": action}
+	observer := databricksRequestHistogram.With(labels)
+	timer := prometheus.NewTimer(observer)
 	defer timer.ObserveDuration()
-	return f()
+	
+	result := f()
+
+	if result != nil {
+		labels["outcome"] = successMetric
+	} else {
+		labels["outcome"] = failureMetric
+	}
+
+	databricksRequestCounter.With(labels).Inc()
+
+	return result
 }
 
-func trackSuccessFailure(err error, counterVec *prometheus.CounterVec, method string) {
-	if err == nil {
-		counterVec.With(prometheus.Labels{"status": successMetric, "method": method}).Inc()
-	} else {
-		counterVec.With(prometheus.Labels{"status": failureMetric, "method": method}).Inc()
-	}
+func init() {
+	// Register custom metrics with the global prometheus registry
+	metrics.Registry.MustRegister(databricksRequestHistogram, databricksRequestCounter)
 }
