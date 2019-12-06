@@ -37,7 +37,7 @@ func (r *DbfsBlockReconciler) submit(instance *databricksv1alpha1.DbfsBlock) err
 	execution := NewExecution("dbfsblocks", "create")
 	createResponse, err := r.APIClient.Dbfs().Create(instance.Spec.Path, true)
 	execution.Finish(err)
-	
+
 	if err != nil {
 		return err
 	}
@@ -47,15 +47,15 @@ func (r *DbfsBlockReconciler) submit(instance *databricksv1alpha1.DbfsBlock) err
 	for i := 0; i < len(data); i += g {
 		execution = NewExecution("dbfsblocks", "add_block")
 		err = r.APIClient.Dbfs().AddBlock(createResponse.Handle, data[i:])
-	
+
 		if i+g <= len(data) {
 			err = r.APIClient.Dbfs().AddBlock(createResponse.Handle, data[i:i+g])
 		} else {
 			err = r.APIClient.Dbfs().AddBlock(createResponse.Handle, data[i:])
 		}
-	
+
 		execution.Finish(err)
-	
+
 		if err != nil {
 			return err
 		}
@@ -76,7 +76,7 @@ func (r *DbfsBlockReconciler) submit(instance *databricksv1alpha1.DbfsBlock) err
 	execution = NewExecution("dbfsblocks", "get_status")
 	fileInfo, err := r.APIClient.Dbfs().GetStatus(instance.Spec.Path)
 	execution.Finish(err)
-	
+
 	if err != nil {
 		return err
 	}

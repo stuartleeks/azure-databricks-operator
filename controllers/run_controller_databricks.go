@@ -25,7 +25,6 @@ import (
 	"time"
 
 	databricksv1alpha1 "github.com/microsoft/azure-databricks-operator/api/v1alpha1"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/xinsnake/databricks-sdk-golang/azure"
 	dbmodels "github.com/xinsnake/databricks-sdk-golang/azure/models"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -155,9 +154,6 @@ func (r *RunReconciler) runUsingRunNow(instance *databricksv1alpha1.Run) (*dbmod
 }
 
 func (r *RunReconciler) runUsingRunsSubmit(instance *databricksv1alpha1.Run) (*dbmodels.Run, error) {
-	timer := prometheus.NewTimer(runSubmitDuration)
-	defer timer.ObserveDuration()
-
 	clusterSpec := dbmodels.ClusterSpec{
 		NewCluster:        instance.Spec.NewCluster,
 		ExistingClusterID: instance.Spec.ExistingClusterID,
