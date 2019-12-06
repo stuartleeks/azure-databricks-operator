@@ -116,16 +116,13 @@ func (r *RunReconciler) delete(instance *databricksv1alpha1.Run) error {
 	// It takes time for DataBricks to cancel a run
 	time.Sleep(15 * time.Second)
 
-	return trackExecutionMetrics(func() error {
-		err := r.APIClient.Jobs().RunsDelete(runID)
-		return err
-	}, "run", "delete")
+	execution := NewExecution("run", "delete")
+	err := r.APIClient.Jobs().RunsDelete(runID)
+	execution.Finish(err)
+	return err
 }
 
 func (r *RunReconciler) runUsingRunNow(instance *databricksv1alpha1.Run) (*dbmodels.Run, error) {
-	timer := prometheus.NewTimer(runNowDuration)
-	defer timer.ObserveDuration()
-
 	runParameters := dbmodels.RunParameters{
 		JarParams:         instance.Spec.JarParams,
 		NotebookParams:    instance.Spec.NotebookParams,
@@ -149,10 +146,12 @@ func (r *RunReconciler) runUsingRunNow(instance *databricksv1alpha1.Run) (*dbmod
 		},
 	})
 
+	execution := NewExecution("run", "runnow")
 	run, err := r.APIClient.Jobs().RunNow(k8sJob.Status.JobStatus.JobID, runParameters)
-	trackSuccessFailure(err, runCounterVec, "runsnow")
-	return &run, err
+	execution.Finish(err)
+	return &run, err 
 }
+
 
 func (r *RunReconciler) runUsingRunsSubmit(instance *databricksv1alpha1.Run) (*dbmodels.Run, error) {
 	timer := prometheus.NewTimer(runSubmitDuration)
