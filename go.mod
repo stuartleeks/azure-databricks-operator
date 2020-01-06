@@ -12,7 +12,7 @@ require (
 	github.com/prometheus/client_golang v0.9.2
 	github.com/prometheus/common v0.0.0-20181126121408-4724e9255275
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stuartleeks/databricks-sdk-golang v0.0.12345
+	github.com/xinsnake/databricks-sdk-golang v0.1.2
 	golang.org/x/crypto v0.0.0-20191112222119-e1110fd1c708 // indirect
 	golang.org/x/net v0.0.0-20191112182307-2180aed22343
 	golang.org/x/sys v0.0.0-20191112214154-59a1497f0cea // indirect
@@ -26,3 +26,5 @@ require (
 	sigs.k8s.io/controller-runtime v0.4.0
 	sigs.k8s.io/controller-tools v0.2.4 // indirect
 )
+
+replace github.com/xinsnake/databricks-sdk-golang => github.com/stuartleeks/databricks-sdk-golang v0.0.12345
