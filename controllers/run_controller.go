@@ -28,8 +28,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
-	ctrl_controller "sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	ctrl_controller "sigs.k8s.io/controller-runtime/pkg/controller"
 
 	databricksv1alpha1 "github.com/microsoft/azure-databricks-operator/api/v1alpha1"
 )
@@ -112,7 +112,7 @@ func (r *RunReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&databricksv1alpha1.Run{}).
 		WithOptions(ctrl_controller.Options{
-			MaxConcurrentReconciles: 5,
+			MaxConcurrentReconciles: 10,
 		}).
 		Complete(r)
 }
