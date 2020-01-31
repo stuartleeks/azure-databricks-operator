@@ -120,7 +120,10 @@ func (r *RunReconciler) publishRunDurationMetric(run *databricksv1alpha1.Run) {
 		return
 	}
 	metadata := run.Status.Metadata
-	duration := time.Duration(metadata.SetupDuration+metadata.ExecutionDuration+metadata.CleanupDuration) * time.Millisecond
+	apiDuration := time.Duration(metadata.SetupDuration+metadata.ExecutionDuration+metadata.CleanupDuration) * time.Millisecond
+
+	startTime := time.Unix(run.Status.Metadata.StartTime/1000, 0) // API returns milliseconds since epoch
+	durationSinceStart := time.Now().UTC().Sub(startTime)
 
 	labels := prometheus.Labels{
 		"run_id":           fmt.Sprintf("%d", metadata.RunID),
@@ -129,7 +132,10 @@ func (r *RunReconciler) publishRunDurationMetric(run *databricksv1alpha1.Run) {
 
 	databricksRunDurationHistogram.
 		With(labels).
-		Observe(duration.Seconds())
+		Observe(apiDuration.Seconds())
+	databricksRunTimeToDetectFinishedHistogram.
+		With(labels).
+		Observe(durationSinceStart.Seconds())
 }
 
 // SetupWithManager adds the controller manager
