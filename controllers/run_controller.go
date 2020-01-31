@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
+	"github.com/prometheus/client_golang/prometheus"
 	dbazure "github.com/xinsnake/databricks-sdk-golang/azure"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -106,9 +107,29 @@ func (r *RunReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		r.Recorder.Event(instance, corev1.EventTypeNormal, "Refreshed", "Object is refreshed")
 	}
 	if instance.IsTerminated() {
+		r.publishRunDurationMetric(instance)
 		return ctrl.Result{}, nil
 	}
 	return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
+}
+
+func (r *RunReconciler) publishRunDurationMetric(run *databricksv1alpha1.Run) {
+	if run.Status == nil ||
+		run.Status.Metadata.State == nil ||
+		run.Status.Metadata.State.LifeCycleState == nil {
+		return
+	}
+	metadata := run.Status.Metadata
+	duration := time.Duration(metadata.SetupDuration+metadata.ExecutionDuration+metadata.CleanupDuration) * time.Millisecond
+
+	labels := prometheus.Labels{
+		"run_id":           fmt.Sprintf("%d", metadata.RunID),
+		"life_cycle_state": string(*metadata.State.LifeCycleState),
+	}
+
+	databricksRunDurationHistogram.
+		With(labels).
+		Observe(duration.Seconds())
 }
 
 // SetupWithManager adds the controller manager

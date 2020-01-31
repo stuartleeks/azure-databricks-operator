@@ -33,9 +33,15 @@ var databricksRequestHistogram = prometheus.NewHistogramVec(prometheus.Histogram
 	Help: "Duration of upstream calls to Databricks REST service endpoints",
 }, []string{"object_type", "action", "outcome"})
 
+var databricksRunDurationHistogram = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+	Name: "databricks_run_duration_seconds",
+	Help: "Duration of upstream calls to Databricks REST service endpoints",
+}, []string{"run_id", "life_cycle_state"})
+
 func init() {
 	// Register custom metrics with the global prometheus registry
 	metrics.Registry.MustRegister(databricksRequestHistogram)
+	metrics.Registry.MustRegister(databricksRunDurationHistogram)
 }
 
 // NewExecution creates an Execution instance and starts the timer
