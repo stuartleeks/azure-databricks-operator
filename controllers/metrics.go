@@ -28,19 +28,24 @@ const (
 	failureMetric = "failure"
 )
 
+// These buckets span 10s to almost 14 hours so hopefully give a reasonable general-purpose range
+var runDurationBuckets = prometheus.ExponentialBuckets(10, 1.34, 30)
+
 var databricksRequestHistogram = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 	Name: "databricks_request_duration_seconds",
 	Help: "Duration of upstream calls to Databricks REST service endpoints",
 }, []string{"object_type", "action", "outcome"})
 
 var databricksRunDurationHistogram = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-	Name: "databricks_run_duration_seconds",
-	Help: "Duration of Databricks Runs (as reported by API)",
+	Name:    "databricks_run_duration_seconds",
+	Help:    "Duration of Databricks Runs (as reported by API)",
+	Buckets: runDurationBuckets,
 }, []string{"life_cycle_state"})
 
 var databricksRunTimeToDetectFinishedHistogram = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-	Name: "databricks_run_time_to_detect_finished_seconds",
-	Help: "Duration of Databricks Runs (calculated from start time to time we detect it is complete)",
+	Name:    "databricks_run_time_to_detect_finished_seconds",
+	Help:    "Duration of Databricks Runs (calculated from start time to time we detect it is complete)",
+	Buckets: runDurationBuckets,
 }, []string{"life_cycle_state"})
 
 func init() {
