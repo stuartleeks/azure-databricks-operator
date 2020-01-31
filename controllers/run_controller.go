@@ -126,7 +126,6 @@ func (r *RunReconciler) publishRunDurationMetric(run *databricksv1alpha1.Run) {
 	durationSinceStart := time.Now().UTC().Sub(startTime)
 
 	labels := prometheus.Labels{
-		"run_id":           fmt.Sprintf("%d", metadata.RunID),
 		"life_cycle_state": string(*metadata.State.LifeCycleState),
 	}
 
