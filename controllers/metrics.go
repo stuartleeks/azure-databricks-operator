@@ -35,7 +35,12 @@ var databricksRequestHistogram = prometheus.NewHistogramVec(prometheus.Histogram
 
 var databricksRunDurationHistogram = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 	Name: "databricks_run_duration_seconds",
-	Help: "Duration of upstream calls to Databricks REST service endpoints",
+	Help: "Duration of Databricks Runs (as reported by API)",
+}, []string{"run_id", "life_cycle_state"})
+
+var databricksRunTimeToDetectFinishedHistogram = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+	Name: "databricks_run_time_to_detect_finished_seconds",
+	Help: "Duration of Databricks Runs (calculated from start time to time we detect it is complete)",
 }, []string{"run_id", "life_cycle_state"})
 
 func init() {
