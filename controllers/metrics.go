@@ -52,6 +52,7 @@ func init() {
 	// Register custom metrics with the global prometheus registry
 	metrics.Registry.MustRegister(databricksRequestHistogram)
 	metrics.Registry.MustRegister(databricksRunDurationHistogram)
+	metrics.Registry.MustRegister(databricksRunTimeToDetectFinishedHistogram)
 }
 
 // NewExecution creates an Execution instance and starts the timer
